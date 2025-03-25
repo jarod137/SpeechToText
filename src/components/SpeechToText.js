@@ -1,60 +1,74 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 
 const SpeechToText = () => {
-  const [transcript, setTranscript] = useState('');
+  const [transcript, setTranscript] = useState("");
+  const [translatedText, setTranslatedText] = useState("");
   const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState(null);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
     if (SpeechRecognition) {
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.interimResults = true;
-      recognitionInstance.lang = 'en-US';
+      const recognition = new SpeechRecognition();
+      recognition.interimResults = false; // Only send complete messages
+      recognition.lang = "en-US";
 
-      recognitionInstance.onresult = (event) => {
-        const currentTranscript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join('');
-        setTranscript(currentTranscript);
-      };
-
-      recognitionInstance.onend = () => {
-        if (isListening) {
-          recognitionInstance.start();
+      recognition.onresult = async (event) => {
+        if (event.results[0].isFinal) {
+          const message = event.results[0][0].transcript.trim();
+          setTranscript(message);
+          translateText(message);
         }
       };
 
-      setRecognition(recognitionInstance);
+      recognition.onend = () => {
+        if (isListening) recognition.start();
+      };
+
+      recognitionRef.current = recognition;
     } else {
-      console.error('Speech recognition not supported in this browser.');
+      console.error("Speech recognition not supported in this browser.");
     }
   }, [isListening]);
 
   const startListening = () => {
-    if (recognition) {
+    if (recognitionRef.current) {
       setIsListening(true);
-      recognition.start();
+      recognitionRef.current.start();
     }
   };
 
   const stopListening = () => {
-    if (recognition) {
+    if (recognitionRef.current) {
       setIsListening(false);
-      recognition.stop();
+      recognitionRef.current.stop();
+    }
+  };
+
+  const translateText = async (text) => {
+    try {
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodeURIComponent(text)}`
+      );
+      const data = await response.json();
+      setTranslatedText(data[0][0][0]);
+    } catch (error) {
+      console.error("Translation error:", error);
     }
   };
 
   return (
     <div>
-      <h1>Speech to Text</h1>
+      <h1>Speech to Text & Translation</h1>
       <button onClick={startListening} disabled={isListening}>
         Start Listening
       </button>
       <button onClick={stopListening} disabled={!isListening}>
         Stop Listening
       </button>
-      <p>Transcript: {transcript}</p>
+      <p><strong>Transcript:</strong> {transcript}</p>
+      <p><strong>Translated Text:</strong> {translatedText}</p>
     </div>
   );
 };
