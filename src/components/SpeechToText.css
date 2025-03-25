@@ -1,0 +1,45 @@
+.container {
+  text-align: center;
+  margin-top: 50px;
+}
+
+h1 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
+  cursor: pointer;
+  font-size: 1em;
+  border-radius: 5px;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+label {
+  font-size: 1.2em;
+  margin-right: 10px;
+}
+
+select {
+  font-size: 1em;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+p {
+  font-size: 1.2em;
+  margin-top: 20px;
+}
+
+strong {
+  font-weight: bold;
+}

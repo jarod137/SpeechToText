@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
+import './SpeechToText.css';
 
 const SpeechToText = () => {
   const [transcript, setTranscript] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [targetLanguage, setTargetLanguage] = useState("es"); // Default to Spanish
   const recognitionRef = useRef(null);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ const SpeechToText = () => {
   const translateText = async (text) => {
     try {
       const response = await fetch(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodeURIComponent(text)}`
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLanguage}&dt=t&q=${encodeURIComponent(text)}`
       );
       const data = await response.json();
       setTranslatedText(data[0][0][0]);
@@ -58,8 +60,12 @@ const SpeechToText = () => {
     }
   };
 
+  const handleLanguageChange = (event) => {
+    setTargetLanguage(event.target.value);
+  };
+
   return (
-    <div>
+    <div className="container">
       <h1>Speech to Text & Translation</h1>
       <button onClick={startListening} disabled={isListening}>
         Start Listening
@@ -67,6 +73,17 @@ const SpeechToText = () => {
       <button onClick={stopListening} disabled={!isListening}>
         Stop Listening
       </button>
+      <div>
+        <label htmlFor="language">Select Language: </label>
+        <select id="language" value={targetLanguage} onChange={handleLanguageChange}>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="it">Italian</option>
+          <option value="zh">Chinese</option>
+          {/* Add more languages as needed */}
+        </select>
+      </div>
       <p><strong>Transcript:</strong> {transcript}</p>
       <p><strong>Translated Text:</strong> {translatedText}</p>
     </div>
